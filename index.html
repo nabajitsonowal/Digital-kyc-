@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Assignment App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f0fdf4; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; width: 100%; max-width: 600px; padding: 35px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        
+        h1, h2 { margin-top: 0; color: #111827; }
+        .step { display: none; }
+        .active-step { display: block; animation: slideUp 0.4s ease-out; }
+        
+        label { display: block; margin-top: 15px; font-weight: 600; color: #374151; font-size: 14px; margin-bottom: 5px; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; background: #f9fafb; }
+        input[type="text"]:focus { border-color: #22c55e; outline: none; background: white; }
+        
+        .upload-row { display: flex; gap: 10px; margin-top: 5px; }
+        .upload-btn { flex: 1; border: 1px solid #d1d5db; background: #f9fafb; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .upload-btn:hover { background: #e5e7eb; }
+        .upload-btn.done { background: #dcfce7; color: #15803d; border-color: #86efac; }
+
+        .preview-img { width: 100%; height: 180px; object-fit: contain; background: #000; display: none; margin-top: 10px; border-radius: 8px; }
+        
+        button { width: 100%; padding: 15px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 25px; transition: 0.2s; }
+        button:hover { background: #15803d; }
+        button.secondary { background: white; color: #4b5563; border: 1px solid #d1d5db; margin-top: 10px; }
+        button.start-btn { background: #16a34a; font-size: 18px; padding: 18px; box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3); }
+
+        /* Review Section Grid */
+        .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .review-item { background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .review-item small { color: #64748b; font-size: 12px; display: block; margin-bottom: 4px; }
+        .review-item strong { color: #0f172a; font-size: 14px; display: block; word-break: break-all; }
+        .review-img-box { text-align: center; }
+        .review-img-box img { width: 100%; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="step0" class="step active-step" style="text-align: center;">
+        <div style="font-size: 50px; margin-bottom: 10px;">WELCOME TO</div>
+        <h1>Digital E-KYC</h1>
+        <p style="color: #6b7280;">Instant Verification Portal</p>
+        <button class="start-btn" onclick="goToStep(1)">Start Verification</button>
+    </div>
+
+    <div id="step1" class="step">
+        <h2>Step 1: Upload Aadhaar</h2>
+        <p style="color: #6b7280; font-size: 14px;">Upload a clear image of your Aadhaar.</p>
+        
+        <div class="upload-btn" style="height: 100px; display: flex; align-items: center; justify-content: center; border: 2px dashed #cbd5e1;" onclick="document.getElementById('aadhaarFile').click()">
+            <span id="aadhaarLabel">📂 Click to Upload Aadhaar Card</span>
+        </div>
+        <input type="file" id="aadhaarFile" hidden accept="image/*" onchange="preview(this, 'aadhaarPreview', 'aadhaarLabel')">
+        <img id="aadhaarPreview" class="preview-img" style="background: white; border: 1px solid #eee;">
+        
+        <button onclick="processAadhaar()">Scan & Proceed</button>
+    </div>
+
+    <div id="step2" class="step">
+        <h2>Step 2: Verify Details</h2>
+        <p style="color: #6b7280; font-size: 13px;">Please correct any missing info.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label>Full Name</label>
+                <input type="text" id="inputName">
+            </div>
+            <div>
+                <label>Date of Birth</label>
+                <input type="text" id="inputDob" placeholder="DD/MM/YYYY">
+            </div>
+        </div>
+
+        <label>Aadhaar Number</label>
+        <input type="text" id="inputAadhaar" placeholder="XXXX XXXX XXXX">
+
+        <label>Upload Documents</label>
+        <div class="upload-row">
+            <div class="upload-btn" onclick="document.getElementById('panFile').click()">📤 PAN Card</div>
+            <div class="upload-btn" onclick="document.getElementById('sigFile').click()">✍️ Signature</div>
+        </div>
+        <input type="file" id="panFile" accept="image/*" hidden onchange="markDone(this)">
+        <input type="file" id="sigFile" accept="image/*" hidden onchange="markDone(this)">
+
+        <label>Passport Photo</label>
+        <div class="upload-btn" onclick="document.getElementById('passportFile').click()">🖼️ Select Photo</div>
+        <input type="file" id="passportFile" accept="image/*" hidden onchange="markDone(this); preview(this, 'dummy', null)">
+
+        <button onclick="goToStep(3)">Next: Live Selfie</button>
+    </div>
+
+    <div id="step3" class="step">
+        <h2>Step 3: Liveness Check</h2>
+        <video id="video" autoplay playsinline style="width: 100%; border-radius: 10px; background: black;"></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="capturedSelfie" class="preview-img">
+        
+        <button id="captureBtn" onclick="capturePhoto()">📸 Take Selfie</button>
+        <button id="nextBtn3" style="display:none;" onclick="goToStep(4)">Proceed to Review</button>
+    </div>
+
+    <div id="step4" class="step">
+        <h2>Step 4: Review Application</h2>
+        <p style="color: #6b7280; margin-bottom: 20px;">Review your details before final submission.</p>
+
+        <div class="review-grid">
+            <div class="review-item">
+                <small>Full Name</small>
+                <strong id="reviewName"></strong>
+            </div>
+            <div class="review-item">
+                <small>Date of Birth</small>
+                <strong id="reviewDob"></strong>
+            </div>
+            <div class="review-item" style="grid-column: span 2;">
+                <small>Aadhaar Number</small>
+                <strong id="reviewAadhaar"></strong>
+            </div>
+        </div>
+
+        <label style="margin-top: 20px;">Uploaded Documents</label>
+        <div class="review-grid">
+            <div class="review-img-box">
+                <small>Passport Photo</small>
+                <img id="revPassport">
+            </div>
+            <div class="review-img-box">
+                <small>Live Selfie</small>
+                <img id="revSelfie">
+            </div>
+            <div class="review-img-box">
+                <small>PAN Card</small>
+                <img id="revPan">
+            </div>
+            <div class="review-img-box">
+                <small>Signature</small>
+                <img id="revSig">
+            </div>
+        </div>
+
+        <button onclick="finalSubmit()">✅ Submit KYC</button>
+        <button class="secondary" onclick="location.reload()">❌ Cancel</button>
+    </div>
+
+    <div id="step5" class="step" style="text-align: center;">
+        <div style="font-size: 60px;">🎉</div>
+        <h2 style="color: #16a34a; margin-top: 10px;">Verification Successful!</h2>
+        <p>Your KYC application has been approved.</p>
+        <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px dashed #22c55e;">
+            <strong>Ref ID:</strong> KYC-2025-X892
+        </div>
+        <button onclick="location.reload()">Home</button>
+    </div>
+
+</div>
+
+<script>
+    let selfieBlob = null;
+
+    function goToStep(n) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active-step'));
+        document.getElementById('step' + n).classList.add('active-step');
+        if(n === 3) startCamera();
+        if(n === 4) prepareReview();
+    }
+
+    function preview(input, imgId, labelId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                if(imgId !== 'dummy') {
+                    const img = document.getElementById(imgId);
+                    img.src = e.target.result;
+                    img.style.display = "block";
+                }
+                if(labelId) document.getElementById(labelId).innerText = "✅ " + input.files[0].name;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function markDone(input) {
+        if(input.files && input.files[0]) {
+            // Find the div button that triggered this input
+            const btn = document.querySelector(`[onclick="document.getElementById('${input.id}').click()"]`);
+            if(btn) btn.classList.add('done');
+        }
+    }
+
+    async function processAadhaar() {
+        const file = document.getElementById('aadhaarFile').files[0];
+        if(!file) return alert("Please upload Aadhaar.");
+
+        const btn = document.querySelector('#step1 button');
+        btn.innerText = "Scanning AI...";
+        btn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await fetch('http://127.0.0.1:8000/extract_aadhaar', { method: 'POST', body: formData });
+            const data = await res.json();
+            
+            // Populate Step 2 Inputs
+            document.getElementById('inputName').value = data.extracted_name;
+            document.getElementById('inputDob').value = data.extracted_dob;
+            document.getElementById('inputAadhaar').value = data.extracted_aadhaar;
+            
+            goToStep(2);
+        } catch(e) {
+            alert("Is the Python server running?");
+        } finally {
+            btn.innerText = "Scan & Proceed";
+            btn.disabled = false;
+        }
+    }
+
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(s => document.getElementById('video').srcObject = s)
+            .catch(e => alert("Camera blocked"));
+    }
+
+    function capturePhoto() {
+        const v = document.getElementById('video');
+        const c = document.getElementById('canvas');
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        c.getContext('2d').drawImage(v, 0, 0);
+        
+        v.srcObject.getTracks().forEach(t => t.stop());
+        v.style.display = "none";
+        
+        const url = c.toDataURL('image/jpeg');
+        document.getElementById('capturedSelfie').src = url;
+        document.getElementById('capturedSelfie').style.display = "block";
+        document.getElementById('captureBtn').style.display = "none";
+        document.getElementById('nextBtn3').style.display = "block";
+        
+        c.toBlob(b => selfieBlob = b);
+    }
+
+    // Function to read a file input and return a Promise with the Data URL
+    // Used to show previews in Step 4
+    function getBase64(file) {
+        return new Promise((resolve, reject) => {
+            if(!file) resolve(null);
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    async function prepareReview() {
+        // Text Data
+        document.getElementById('reviewName').innerText = document.getElementById('inputName').value;
+        document.getElementById('reviewDob').innerText = document.getElementById('inputDob').value;
+        document.getElementById('reviewAadhaar').innerText = document.getElementById('inputAadhaar').value;
+
+        // Image Data
+        const panFile = document.getElementById('panFile').files[0];
+        const sigFile = document.getElementById('sigFile').files[0];
+        const passFile = document.getElementById('passportFile').files[0];
+
+        if(panFile) document.getElementById('revPan').src = await getBase64(panFile);
+        if(sigFile) document.getElementById('revSig').src = await getBase64(sigFile);
+        if(passFile) document.getElementById('revPassport').src = await getBase64(passFile);
+        document.getElementById('revSelfie').src = document.getElementById('capturedSelfie').src;
+    }
+
+    function finalSubmit() {
+        const btn = document.querySelector('#step4 button');
+        btn.innerText = "Verifying...";
+        btn.disabled = true;
+
+        // 2-Second Delay to simulate server processing, then FORCE SUCCESS
+        setTimeout(() => {
+            goToStep(5);
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>
